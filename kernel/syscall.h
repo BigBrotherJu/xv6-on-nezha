@@ -24,3 +24,6 @@
 #define SYS_trace   22
 #define SYS_sysinfo 23
 /* syscall */
+/* pgtbl */
+#define SYS_printpgtbl 24
+/* pgtbl */

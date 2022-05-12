@@ -40,3 +40,6 @@ entry("uptime");
 entry("trace");
 entry("sysinfo");
 # syscall
+# pgtbl
+entry("printpgtbl");
+# pgtbl

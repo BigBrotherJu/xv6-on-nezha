@@ -30,6 +30,10 @@ int uptime(void);
 int trace(int);
 int sysinfo(struct sysinfo *);
 /* syscall */
+/* pgtbl */
+int ugetpid(void);
+int printpgtbl(void);
+/* pgtbl */
 
 // ulib.c
 int stat(const char*, struct stat*);

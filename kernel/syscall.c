@@ -108,6 +108,9 @@ extern uint64 sys_uptime(void);
 extern uint64 sys_trace(void);
 extern uint64 sys_sysinfo(void);
 /* syscall */
+/* pgtbl */
+extern uint64 sys_printpgtbl(void);
+/* pgtbl */
 
 static uint64 (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -135,10 +138,13 @@ static uint64 (*syscalls[])(void) = {
 [SYS_trace]   sys_trace,
 [SYS_sysinfo] sys_sysinfo,
 /* syscall */
+/* pgtbl */
+[SYS_printpgtbl] sys_printpgtbl,
+/* pgtbl */
 };
 
 /* syscall */
-static char syscall_names[][8] = {
+static char syscall_names[][12] = {
   "",
   "fork",
   "exit",
@@ -162,7 +168,8 @@ static char syscall_names[][8] = {
   "mkdir",
   "close",
   "trace",
-  "sysinfo"
+  "sysinfo",
+  "printpgtbl",
 };
 /* syscall */
 

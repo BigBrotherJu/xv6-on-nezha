@@ -2,6 +2,10 @@
 #include "kernel/stat.h"
 #include "kernel/fcntl.h"
 #include "user/user.h"
+/* pgtbl */
+#include "kernel/riscv.h"
+#include "kernel/memlayout.h"
+/* pgtbl */
 
 char*
 strcpy(char *s, const char *t)
@@ -134,3 +138,12 @@ memcpy(void *dst, const void *src, uint n)
 {
   return memmove(dst, src, n);
 }
+
+/* pgtbl */
+int
+ugetpid(void)
+{
+  struct usyscall *u = (struct usyscall *)USYSCALL;
+  return u->pid;
+}
+/* pgtbl */

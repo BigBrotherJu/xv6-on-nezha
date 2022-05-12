@@ -146,6 +146,9 @@ UPROGS +=\
 	$U/_trace\
 	$U/_sysinfotest\
 
+UPROGS +=\
+	$U/_pgtbltest\
+
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
 	xxd -i fs.img > kernel/ramdisk.h

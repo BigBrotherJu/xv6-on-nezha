@@ -127,3 +127,14 @@ sys_sysinfo(void)
 
 }
 /* syscall */
+
+
+/* pgtbl */
+uint64
+sys_printpgtbl(void)
+{
+  struct proc *p = myproc();
+  vmprint(p->pagetable);
+  return 0;
+}
+/* pgtbl */
