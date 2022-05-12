@@ -6,6 +6,9 @@
 #include "defs.h"
 #include "fs.h"
 
+#include "spinlock.h"
+#include "proc.h"
+
 /*
  * the kernel's page table.
  */
@@ -326,9 +329,17 @@ uvmfree(pagetable_t pagetable, uint64 sz)
 // physical memory.
 // returns 0 on success, -1 on failure.
 // frees any allocated pages on failure.
+// ------------ COW uvmcopy ----------------
+// Given a parent process's page table, copy
+// the contents of it into the page table of
+// the child.
+// Copies only the page table, no physical
+// memory is allocated.
+// returns 0 on success, -1 on failure.
 int
 uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
 {
+  /*
   pte_t *pte;
   uint64 pa, i;
   uint flags;
@@ -354,7 +365,84 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
  err:
   uvmunmap(new, 0, i / PGSIZE, 1);
   return -1;
+  */
+
+  pte_t *pte;
+  uint64 pa, i;
+  uint flags;
+
+  for(i = 0; i < sz; i += PGSIZE){
+    if((pte = walk(old, i, 0)) == 0)
+      panic("uvmcopy: pte should exist");
+    if((*pte & PTE_V) == 0)
+      panic("uvmcopy: page not present");
+
+    // clear PTE_W in parent PTEs
+    *pte = *pte & ~PTE_W;
+
+    // set PTE_COW in parent PTEs
+    *pte = *pte | PTE_COW;
+
+    // install the same PTE in child
+    pa = PTE2PA(*pte);
+    flags = PTE_FLAGS(*pte);
+    if(mappages(new, i, PGSIZE, pa, flags) != 0){
+      goto err;
+    }
+
+    // update ref count
+    inc_ref_cnt(pa);
+  }
+  return 0;
+
+ err:
+  uvmunmap(new, 0, i / PGSIZE, 1);
+  return -1;
+
 }
+
+/* cow */
+// returns non zero when the page va in is cow
+// page and valid
+// returns zero otherwise
+int
+uvmcowcheck(pagetable_t pagetable, uint64 va, uint64 sz)
+{
+  if (va >= sz) {
+    return 0;
+  } else {
+    pte_t *pte = walk(pagetable, va, 0);
+    return (*pte & PTE_COW) && (*pte & PTE_V);
+  }
+}
+
+// returns -1 if no memory can be allocated
+// returns 0 otherwise
+int
+uvmcowalloc(pagetable_t pagetable, uint64 fault_va)
+{
+  pte_t *pte;
+  if((pte = walk(pagetable, fault_va, 0)) == 0)
+    panic("uvmcowalloc: pte should exist");
+  if((*pte & PTE_V) == 0)
+    panic("uvmcowalloc: page not present");
+
+  // do allocation and copy if possible
+  uint64 fault_pg = PTE2PA(*pte);
+  uint64 new_pa = kcow_alloc_copy(fault_pg);
+  if (new_pa == 0)
+    return -1;
+
+  // in fault_va's pte, set PTE_W, clear PTE_COW
+  // change pte's physical page number
+  *pte = *pte | PTE_W;
+  *pte = *pte & ~PTE_COW;
+  *pte = PTE_FLAGS(*pte);
+  *pte = *pte | PA2PTE(new_pa);
+
+  return 0;
+}
+/* cow */
 
 // mark a PTE invalid for user access.
 // used by exec for the user stack guard page.
@@ -376,6 +464,15 @@ int
 copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
 {
   uint64 n, va0, pa0;
+
+  /* cow */
+  if (uvmcowcheck(pagetable, dstva, myproc()->sz)) {
+    if (uvmcowalloc(pagetable, dstva) == -1) {
+      panic("copyout: no memory when allocating new page for COW page");
+      return -1;
+    }
+  }
+  /* cow */
 
   while(len > 0){
     va0 = PGROUNDDOWN(dstva);

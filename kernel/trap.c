@@ -68,9 +68,22 @@ usertrap(void)
   } else if((which_dev = devintr()) != 0){
     // ok
   } else {
+
+    /* cow */
+    // store page fault on COW page
+    if (r_scause() == 15 && uvmcowcheck(p->pagetable, r_stval(), p->sz) != 0) {
+      if (uvmcowalloc(p->pagetable, r_stval()) == -1) {
+        printf("no memory when allocating new page for store page"
+               "fault on COW page\n");
+        p->killed = 1;
+      }
+    } else {
+    /* cow */
+
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
     p->killed = 1;
+    }
   }
 
   if(p->killed)
