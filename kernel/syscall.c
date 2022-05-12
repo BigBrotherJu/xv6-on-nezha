@@ -111,6 +111,10 @@ extern uint64 sys_sysinfo(void);
 /* pgtbl */
 extern uint64 sys_printpgtbl(void);
 /* pgtbl */
+/* trap */
+extern uint64 sys_sigalarm(void);
+extern uint64 sys_sigreturn(void);
+/* trap */
 
 static uint64 (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -141,6 +145,10 @@ static uint64 (*syscalls[])(void) = {
 /* pgtbl */
 [SYS_printpgtbl] sys_printpgtbl,
 /* pgtbl */
+/* trap */
+[SYS_sigalarm]  sys_sigalarm,
+[SYS_sigreturn] sys_sigreturn,
+/* trap */
 };
 
 /* syscall */

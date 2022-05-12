@@ -102,6 +102,39 @@ sys_uptime(void)
   return xticks;
 }
 
+/* trap */
+uint64 
+sys_sigalarm(void)
+{
+  int n;
+  uint64 p;
+
+  if(argint(0, &n) < 0)
+    return -1;
+  if(argaddr(1, &p) < 0)
+    return -1;
+  if (n == 0 && p == 0) {
+    myproc()->alarm_status = 0;
+  } else {
+    myproc()->interval_ticks = n;
+    myproc()->handler = p;
+    myproc()->alarm_status = 1;
+
+    if((myproc()->alarm_reg = (struct trapframe *)kalloc()) == 0)
+      return -1;
+  }
+  return 0;
+}
+
+uint64 
+sys_sigreturn(void)
+{
+  myproc()->alarm_status = 1;
+  memmove(myproc()->trapframe, myproc()->alarm_reg, sizeof(struct trapframe));
+  return 0;
+}
+/* trap */
+
 /* syscall */
 uint64
 sys_trace(void)

@@ -112,4 +112,18 @@ struct proc {
   /* syscall */
   int trace_num;
   /* syscall */
+
+  /* trap */
+  int interval_ticks;
+  int passed_ticks;
+  uint64 handler;
+  // 0 when sigalarm hasn't been called, the process won't repsond to timer
+  // interrupt
+  // 1 when sigalarm has been called, the process will repsond to timer
+  // interrupt
+  // 2 when the timer interrupt is being handled, but the handler hasn't
+  // return yet
+  int alarm_status;
+  struct trapframe *alarm_reg;
+  /* trap */
 };

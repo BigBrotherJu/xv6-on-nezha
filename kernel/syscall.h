@@ -27,3 +27,7 @@
 /* pgtbl */
 #define SYS_printpgtbl 24
 /* pgtbl */
+/* trap */
+#define SYS_sigalarm  25
+#define SYS_sigreturn 26
+/* trap */

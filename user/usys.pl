@@ -43,3 +43,7 @@ entry("sysinfo");
 # pgtbl
 entry("printpgtbl");
 # pgtbl
+# trap
+entry("sigalarm");
+entry("sigreturn");
+# trap

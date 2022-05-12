@@ -34,6 +34,10 @@ int sysinfo(struct sysinfo *);
 int ugetpid(void);
 int printpgtbl(void);
 /* pgtbl */
+/* trap */
+int sigalarm(int ticks, void (*handler)());
+int sigreturn(void);
+/* trap */
 
 // ulib.c
 int stat(const char*, struct stat*);
