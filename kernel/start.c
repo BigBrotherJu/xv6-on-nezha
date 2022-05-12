@@ -71,7 +71,7 @@ timerinit()
   int id = r_mhartid();
 
   // ask the CLINT for a timer interrupt.
-  int interval = 100000000; // cycles; about 1/10th second in qemu.
+  int interval = 1000000; // cycles; about 1/10th second in qemu.
   // *(uint64*)CLINT_MTIMECMP(id) = *(uint64*)CLINT_MTIME + interval;
   uint64 time = r_time() + interval;
   *(uint32*)CLINT_MTIMECMP(id) = time & 0xffffffff;
