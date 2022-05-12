@@ -17,6 +17,8 @@ simpletest()
 
   printf("simple: ");
 
+
+  printf("allocated more than half of physical memory\n");
   char *p = sbrk(sz);
   if(p == (char*)0xffffffffffffffffL){
     printf("sbrk(%d) failed\n", sz);
@@ -27,6 +29,9 @@ simpletest()
     *(int*)q = getpid();
   }
 
+  printf("forked a child\n");
+  printf("this will fail in the default kernel, which does not\n"
+         "support copy-on-write.");
   int pid = fork();
   if(pid < 0){
     printf("fork() failed\n");
@@ -77,22 +82,36 @@ threetest()
       exit(-1);
     }
     if(pid2 == 0){
+
+      printf("child process: writing to heap\n");
+
       for(char *q = p; q < p + (sz/5)*4; q += 4096){
         *(int*)q = getpid();
       }
+
+      printf("child process: reading from heap\n");
+
       for(char *q = p; q < p + (sz/5)*4; q += 4096){
         if(*(int*)q != getpid()){
           printf("wrong content\n");
           exit(-1);
         }
       }
+
+      printf("child process: content of heap correct\n");
+
       exit(-1);
     }
+
+    printf("parent process: writing to heap\n");
+
     for(char *q = p; q < p + (sz/2); q += 4096){
       *(int*)q = 9999;
     }
     exit(0);
   }
+
+  printf("grandparent process: writing to heap\n");
 
   for(char *q = p; q < p + sz; q += 4096){
     *(int*)q = getpid();
@@ -102,12 +121,16 @@ threetest()
 
   sleep(1);
 
+  printf("grandparent process: reading from heap\n");
+
   for(char *q = p; q < p + sz; q += 4096){
     if(*(int*)q != getpid()){
       printf("wrong content\n");
       exit(-1);
     }
   }
+
+  printf("grandparent process: content of heap correct\n");
 
   if(sbrk(-sz) == (char*)0xffffffffffffffffL){
     printf("sbrk(-%d) failed\n", sz);
@@ -189,7 +212,7 @@ main(int argc, char *argv[])
   threetest();
   threetest();
 
-  filetest();
+  // filetest();
 
   printf("ALL COW TESTS PASSED\n");
 
