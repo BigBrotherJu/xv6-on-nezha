@@ -50,10 +50,14 @@ testmem() {
     exit(1);
   }
 
+  printf("free mem: %d bytes\n", info.freemem);
+
   if((uint64)sbrk(PGSIZE) == 0xffffffffffffffff){
     printf("sbrk failed");
     exit(1);
   }
+
+  printf("allocated a free page\n");
 
   sinfo(&info);
 
@@ -62,10 +66,14 @@ testmem() {
     exit(1);
   }
 
+  printf("free mem: %d bytes\n", info.freemem);
+
   if((uint64)sbrk(-PGSIZE) == 0xffffffffffffffff){
     printf("sbrk failed");
     exit(1);
   }
+
+  printf("freed an allocated page\n");
 
   sinfo(&info);
 
@@ -73,6 +81,8 @@ testmem() {
     printf("FAIL: free mem %d (bytes) instead of %d\n", n, info.freemem);
     exit(1);
   }
+
+  printf("free mem: %d bytes\n", info.freemem);
 }
 
 void
@@ -99,6 +109,10 @@ void testproc() {
   sinfo(&info);
   nproc = info.nproc;
 
+  printf("used processes: %d\n", nproc);
+
+  printf("forked a child process\n");
+
   pid = fork();
   if(pid < 0){
     printf("sysinfotest: fork failed\n");
@@ -106,6 +120,9 @@ void testproc() {
   }
   if(pid == 0){
     sinfo(&info);
+
+    printf("child process: used processes: %d\n", info.nproc);
+
     if(info.nproc != nproc+1) {
       printf("sysinfotest: FAIL nproc is %d instead of %d\n", info.nproc, nproc+1);
       exit(1);
@@ -114,6 +131,9 @@ void testproc() {
   }
   wait(&status);
   sinfo(&info);
+
+  printf("child process has exited, used processes: %d\n", info.nproc);
+
   if(info.nproc != nproc) {
       printf("sysinfotest: FAIL nproc is %d instead of %d\n", info.nproc, nproc);
       exit(1);
