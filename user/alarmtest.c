@@ -123,11 +123,11 @@ test2()
   int status;
 
   printf("test2 start\n");
+  printf("test2 uses a handler with a long executing time to\n"
+         "make sure when a handler is executing, kernel should\n"
+         "not call it again\n");
   if ((pid = fork()) < 0) {
     printf("test2: fork failed\n");
-    printf("test2 uses a handler with a long executing time to\n"
-           "make sure when a handler is executing, kernel should\n"
-           "not call it again\n");
   }
   if (pid == 0) {
     count = 0;
