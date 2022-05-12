@@ -136,9 +136,13 @@ UPROGS=\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
+
+UPROGS +=\
 	$U/_sleep\
 	$U/_find\
 	$U/_xargs\
+
+UPROGS +=\
 	$U/_trace\
 	$U/_sysinfotest\
 

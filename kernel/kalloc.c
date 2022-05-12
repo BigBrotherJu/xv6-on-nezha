@@ -81,6 +81,7 @@ kalloc(void)
   return (void*)r;
 }
 
+/* syscall */
 int
 free_mem(void)
 {
@@ -95,3 +96,4 @@ free_mem(void)
 
   return result;
 }
+/* syscall */

@@ -6,7 +6,9 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+/* syscall */
 #include "sysinfo.h"
+/* syscall */
 
 uint64
 sys_exit(void)
@@ -97,6 +99,7 @@ sys_uptime(void)
   return xticks;
 }
 
+/* syscall */
 uint64
 sys_trace(void)
 {
@@ -123,3 +126,4 @@ sys_sysinfo(void)
   return 0;
 
 }
+/* syscall */

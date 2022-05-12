@@ -315,7 +315,9 @@ fork(void)
   np->state = RUNNABLE;
   release(&np->lock);
 
+  /* syscall */
   np->trace_num = p->trace_num;
+  /* syscall */
 
   return pid;
 }
@@ -657,6 +659,7 @@ procdump(void)
   }
 }
 
+/* syscall */
 int
 num_proc(void)
 {
@@ -670,3 +673,4 @@ num_proc(void)
   }
   return result;
 }
+/* syscall */
