@@ -153,6 +153,9 @@ UPROGS +=\
 	$U/_bttest\
 	$U/_alarmtest\
 
+UPROGS +=\
+	$U/_cowtest\
+
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
 	xxd -i fs.img > kernel/ramdisk.h
