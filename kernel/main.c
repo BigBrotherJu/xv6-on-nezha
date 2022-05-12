@@ -14,6 +14,14 @@ main()
     consoleinit();
     printfinit();
     printf("\n");
+    printf(
+      "   _  __  _    __  _____                             __  ___\n"
+      "  | |/ / | |  / / / ___/     ____    ____       ____/ / <  /\n"
+      "  |   /  | | / / / __ \\     / __ \\  / __ \\     / __  /  / /\n"
+      " /   |   | |/ / / /_/ /    / /_/ / / / / /    / /_/ /  / /\n"
+      "/_/|_|   |___/  \\____/     \\____/ /_/ /_/     \\__,_/  /_/\n"
+    );
+    printf("\n");
     printf("xv6 kernel is booting\n");
     printf("\n");
     kinit();         // physical page allocator
@@ -27,7 +35,7 @@ main()
     binit();         // buffer cache
     iinit();         // inode table
     fileinit();      // file table
-    virtio_disk_init(); // emulated hard disk
+    ramdiskinit();   // ram disk
     userinit();      // first user process
     __sync_synchronize();
     started = 1;

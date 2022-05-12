@@ -3,6 +3,8 @@
 #include "memlayout.h"
 #include "riscv.h"
 #include "defs.h"
+#include "clkinit.h"
+#include "uartinit.h"
 
 void main();
 void timerinit();
@@ -20,6 +22,10 @@ extern void timervec();
 void
 start()
 {
+  sys_clock_init();
+  sys_uart0_init();
+  *(uint32*)PLIC_CTRL = 1;
+
   // set M Previous Privilege mode to Supervisor, for mret.
   unsigned long x = r_mstatus();
   x &= ~MSTATUS_MPP_MASK;
@@ -65,8 +71,11 @@ timerinit()
   int id = r_mhartid();
 
   // ask the CLINT for a timer interrupt.
-  int interval = 1000000; // cycles; about 1/10th second in qemu.
-  *(uint64*)CLINT_MTIMECMP(id) = *(uint64*)CLINT_MTIME + interval;
+  int interval = 100000000; // cycles; about 1/10th second in qemu.
+  // *(uint64*)CLINT_MTIMECMP(id) = *(uint64*)CLINT_MTIME + interval;
+  uint64 time = r_time() + interval;
+  *(uint32*)CLINT_MTIMECMP(id) = time & 0xffffffff;
+  *(uint32*)(CLINT_MTIMECMP(id) + 4) = time >> 32;
 
   // prepare information in scratch[] for timervec.
   // scratch[0..2] : space for timervec to save registers.

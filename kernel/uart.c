@@ -13,7 +13,7 @@
 // the UART control registers are memory-mapped
 // at address UART0. this macro returns the
 // address of one of the registers.
-#define Reg(reg) ((volatile unsigned char *)(UART0 + reg))
+#define Reg(reg) ((volatile unsigned int *)(UART0 + 4*reg))
 
 // the UART control registers.
 // some have different meanings for
@@ -52,6 +52,7 @@ void uartstart();
 void
 uartinit(void)
 {
+  /*
   // disable interrupts.
   WriteReg(IER, 0x00);
 
@@ -73,7 +74,9 @@ uartinit(void)
 
   // enable transmit and receive interrupts.
   WriteReg(IER, IER_TX_ENABLE | IER_RX_ENABLE);
+  */
 
+  // uartinit performed in start.c
   initlock(&uart_tx_lock, "uart");
 }
 
