@@ -5,13 +5,15 @@
 #include "user/user.h"
 
 void ugetpid_test();
-void pgaccess_test();
+// void pgaccess_test();
+void printpgtbl_test();
 
 int
 main(int argc, char *argv[])
 {
   ugetpid_test();
-  pgaccess_test();
+  // pgaccess_test();
+  printpgtbl_test();
   printf("pgtbltest: all tests succeeded\n");
   exit(0);
 }
@@ -41,13 +43,26 @@ ugetpid_test()
         exit(1);
       continue;
     }
-    if (getpid() != ugetpid())
+    int pid = getpid();
+    int upid = ugetpid();
+    if (pid != upid)
       err("missmatched PID");
+    else
+      printf("ugetpid returns %d, matching return values from"
+             " getpid\n", upid);
     exit(0);
   }
   printf("ugetpid_test: OK\n");
 }
 
+void printpgtbl_test()
+{
+    printf("page table for the current process:\n");
+    printpgtbl();
+}
+
+
+/*
 void
 pgaccess_test()
 {
@@ -68,3 +83,6 @@ pgaccess_test()
   free(buf);
   printf("pgaccess_test: OK\n");
 }
+*/
+
+
