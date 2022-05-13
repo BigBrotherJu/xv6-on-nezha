@@ -205,12 +205,24 @@ main(int argc, char *argv[])
 {
   simpletest();
 
+  printf("\n");
+
   // check that the first simpletest() freed the physical memory.
   simpletest();
 
+  printf("\n");
+
   threetest();
+
+  printf("\n");
+
   threetest();
+
+  printf("\n");
+
   threetest();
+
+  printf("\n");
 
   // filetest();
 
