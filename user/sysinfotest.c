@@ -50,6 +50,8 @@ testmem() {
     exit(1);
   }
 
+  printf("freemem from sysinfo equals freemem from sbrk\n");
+
   printf("free mem: %d bytes\n", info.freemem);
 
   if((uint64)sbrk(PGSIZE) == 0xffffffffffffffff){
