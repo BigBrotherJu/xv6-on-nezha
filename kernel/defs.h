@@ -191,6 +191,13 @@ int             copyinstr(pagetable_t, char *, uint64, uint64);
 void            vmprint(pagetable_t);
 /* pgtbl */
 
+/* kernelpgtbl */
+pagetable_t     kvmmake(void);
+void            free_kernelpgtbl(pagetable_t pagetable);
+int             kvmcopymappings(pagetable_t src, pagetable_t dst, uint64 start, uint64 sz);
+uint64          kvmdealloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz);
+/* kernelpgtbl */
+
 // plic.c
 void            plicinit(void);
 void            plicinithart(void);

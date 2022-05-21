@@ -31,7 +31,8 @@ OBJS = \
   $K/ramdisk.o \
   $K/clkinit.o \
   $K/uartinit.o \
-  $K/common.o
+  $K/common.o \
+  $K/vmcopyin.o
 
 # riscv64-unknown-elf- or riscv64-linux-gnu-
 # perhaps in /opt/riscv/bin

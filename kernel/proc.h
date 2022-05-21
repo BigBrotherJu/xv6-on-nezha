@@ -126,4 +126,8 @@ struct proc {
   int alarm_status;
   struct trapframe *alarm_reg;
   /* trap */
+
+  /* kernelpgtbl */
+  pagetable_t kernelpgtbl;
+  /* kernelpgtbl */
 };

@@ -51,6 +51,10 @@ exec(char *path, char **argv)
     uint64 sz1;
     if((sz1 = uvmalloc(pagetable, sz, ph.vaddr + ph.memsz)) == 0)
       goto bad;
+    /* kernelpgtbl */
+    if(sz1 >= UART0)
+      goto bad;
+    /* kernelpgtbl */
     sz = sz1;
     if((ph.vaddr % PGSIZE) != 0)
       goto bad;
@@ -109,6 +113,36 @@ exec(char *path, char **argv)
   safestrcpy(p->name, last, sizeof(p->name));
     
   // Commit to the user image.
+
+  /* kernelpgtbl */
+  for (int i = 0; i * 512 * 512 * PGSIZE < oldsz; i++) {
+    pte_t pte_1 = (p->kernelpgtbl)[i];
+
+    if (pte_1 & PTE_V) {
+      // printf("test\n");
+      pagetable_t pagetable2 = (pagetable_t)PTE2PA(pte_1);
+      for (int j = 0; (i * 512 + j) * 512 * PGSIZE < oldsz; j++) {
+        pte_t pte_2 = pagetable2[j];
+
+        if (pte_2 & PTE_V) {
+          pagetable_t pagetable3 = (pagetable_t)PTE2PA(pte_2);
+          kfree(pagetable3);
+
+          pagetable2[j] = 0;
+        }
+
+      }
+
+      // kvm_free_kernelpgtbl((uint64*)PTE2PA(pte));
+      // printf("test\n");
+    }
+  }
+  
+  // uvmunmap(p->kernelpgtbl, 0, PGROUNDUP(oldsz)/PGSIZE, 0);
+
+  kvmcopymappings(pagetable, p->kernelpgtbl, 0, sz);
+  /* kernelpgtbl */
+
   oldpagetable = p->pagetable;
   p->pagetable = pagetable;
   p->sz = sz;
