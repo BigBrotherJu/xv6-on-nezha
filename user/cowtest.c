@@ -31,7 +31,7 @@ simpletest()
 
   printf("forked a child\n");
   printf("this will fail in the default kernel, which does not\n"
-         "support copy-on-write.");
+         "support copy-on-write\n");
   int pid = fork();
   if(pid < 0){
     printf("fork() failed\n");
@@ -154,7 +154,7 @@ filetest()
 
   buf[0] = 99;
 
-  for(int i = 0; i < 4; i++){
+  for(int i = 0; i < 1; i++){
     if(pipe(fds) != 0){
       printf("pipe() failed\n");
       exit(-1);
@@ -166,6 +166,9 @@ filetest()
     }
     if(pid == 0){
       sleep(1);
+
+      printf("child process: read from pipe to buf\n");
+
       if(read(fds[0], buf, sizeof(i)) != sizeof(i)){
         printf("error: read failed\n");
         exit(1);
@@ -175,9 +178,14 @@ filetest()
       if(j != i){
         printf("error: read the wrong value\n");
         exit(1);
+      } else {
+        printf("child process: buf is 0\n");
       }
       exit(0);
     }
+
+    printf("parent process: write 0 to pipe\n");
+
     if(write(fds[1], &i, sizeof(i)) != sizeof(i)){
       printf("error: write failed\n");
       exit(-1);
@@ -195,6 +203,8 @@ filetest()
   if(buf[0] != 99){
     printf("error: child overwrote parent\n");
     exit(1);
+  } else {
+    printf("parent process: buf is 99\n");
   }
 
   printf("ok\n");
@@ -224,7 +234,7 @@ main(int argc, char *argv[])
 
   printf("\n");
 
-  // filetest();
+  filetest();
 
   printf("ALL COW TESTS PASSED\n");
 
