@@ -1,28 +1,3 @@
-/*
- * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
- * Official site: http://xboot.org
- * Mobile phone: +86-18665388956
- * QQ: 8192542
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
 #include "clkinit.h"
 #include "common.h"
 
@@ -33,6 +8,8 @@ static void set_pll_cpux_axi(void)
     /* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
     write32(D1_CCU_BASE + CCU_RISCV_CLK_REG, (0 << 24) | (3 << 8) | (1 << 0));
     sdelay(1);
+
+    // set cpu pll
 
     /* Disable pll gating */
     val = read32(D1_CCU_BASE + CCU_PLL_CPU_CTRL_REG);
@@ -122,6 +99,7 @@ static void set_pll_periph0(void)
 
 static void set_ahb(void)
 {
+    // 600m / 3 = 200m
     write32(D1_CCU_BASE + CCU_PSI_CLK_REG, (2 << 0) | (0 << 8));
     write32(D1_CCU_BASE + CCU_PSI_CLK_REG, read32(D1_CCU_BASE + CCU_PSI_CLK_REG) | (0x03 << 24));
     sdelay(1);
@@ -129,6 +107,7 @@ static void set_ahb(void)
 
 static void set_apb(void)
 {
+    // 600m / 6 = 100m
     write32(D1_CCU_BASE + CCU_APB0_CLK_REG, (2 << 0) | (1 << 8));
     write32(D1_CCU_BASE + CCU_APB0_CLK_REG, (0x03 << 24) | read32(D1_CCU_BASE + CCU_APB0_CLK_REG));
     sdelay(1);
@@ -147,6 +126,7 @@ static void set_mbus(void)
 {
     uint32_t val;
 
+    // 1584mhz / 4 = 396mhz
     /* Reset mbus domain */
     val = read32(D1_CCU_BASE + CCU_MBUS_CLK_REG);
     val |= (0x1 << 30);
