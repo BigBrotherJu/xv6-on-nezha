@@ -57,7 +57,7 @@ kvmmake(void)
   memset(kpgtbl, 0, PGSIZE);
 
   // uart registers
-  kvmmap(kpgtbl, UART0, UART0, PGSIZE, PTE_R | PTE_W);
+  kvmmap(kpgtbl, UART0_VA, UART0, PGSIZE, PTE_R | PTE_W);
 
   // virtio mmio disk interface
   // kvmmap(kpgtbl, VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
@@ -70,6 +70,54 @@ kvmmake(void)
 
   // map kernel data and the physical RAM we'll make use of.
   kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP-(uint64)etext, PTE_R | PTE_W);
+
+  // map the trampoline for trap entry/exit to
+  // the highest virtual address in the kernel.
+  kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
+
+  /* kernelpgtbl */
+  // map kernel stacks
+  // proc_mapstacks(kpgtbl);
+  /* kernelpgtbl */
+  
+  return kpgtbl;
+}
+
+pagetable_t
+kvmmake_proc(void)
+{
+  pagetable_t kpgtbl;
+
+  kpgtbl = (pagetable_t) kalloc();
+  memset(kpgtbl, 0, PGSIZE);
+
+  // uart registers
+  kvmmap(kpgtbl, UART0_VA, UART0, PGSIZE, PTE_R | PTE_W);
+
+  // virtio mmio disk interface
+  // kvmmap(kpgtbl, VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
+
+  // PLIC
+  // kvmmap(kpgtbl, PLIC, PLIC, 0x400000, PTE_R | PTE_W);
+  pte_t *l1_kernel_pte = walk_level(kpgtbl, PLIC, 1, 1);
+  pte_t *l1_pte = walk_level(kernel_pagetable, PLIC, 0, 1);
+  *l1_kernel_pte = *l1_pte | PTE_SHARED;
+
+  l1_kernel_pte = walk_level(kpgtbl, PLIC + 0x200000, 1, 1);
+  l1_pte = walk_level(kernel_pagetable, PLIC + 0x200000, 0, 1);
+  *l1_kernel_pte = *l1_pte | PTE_SHARED;
+
+  // map kernel text executable and read-only.
+  // kvmmap(kpgtbl, KERNBASE, KERNBASE, (uint64)etext-KERNBASE, PTE_R | PTE_X);
+
+  for (uint64 va = KERNBASE; va < PHYSTOP; va += 512 * 512 * PGSIZE) {
+    pte_t *l2_kernel_pte = walk_level(kpgtbl, va, 1, 2);
+    pte_t *l2_pte = walk_level(kernel_pagetable, va, 0, 2);
+    *l2_kernel_pte = *l2_pte | PTE_SHARED;;
+  }
+
+  // map kernel data and the physical RAM we'll make use of.
+  // kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP-(uint64)etext, PTE_R | PTE_W);
 
   // map the trampoline for trap entry/exit to
   // the highest virtual address in the kernel.
@@ -129,6 +177,26 @@ walk(pagetable_t pagetable, uint64 va, int alloc)
     }
   }
   return &pagetable[PX(0, va)];
+}
+
+pte_t *
+walk_level(pagetable_t pagetable, uint64 va, int alloc, int level)
+{
+  if(va >= MAXVA)
+    panic("walk");
+
+  for(int l = 2; l > level; l--) {
+    pte_t *pte = &pagetable[PX(l, va)];
+    if(*pte & PTE_V) {
+      pagetable = (pagetable_t)PTE2PA(*pte);
+    } else {
+      if(!alloc || (pagetable = (pde_t*)kalloc()) == 0)
+        return 0;
+      memset(pagetable, 0, PGSIZE);
+      *pte = PA2PTE(pagetable) | PTE_V;
+    }
+  }
+  return &pagetable[PX(level, va)];
 }
 
 // Look up a virtual address, return the physical address,
@@ -414,7 +482,11 @@ uvmcowcheck(pagetable_t pagetable, uint64 va, uint64 sz)
     return 0;
   } else {
     pte_t *pte = walk(pagetable, va, 0);
-    return (*pte & PTE_COW) && (*pte & PTE_V);
+    if (pte == 0) {
+      return 0;
+    } else {
+      return ((*pte & PTE_V) && (*pte & PTE_COW));
+    }
   }
 }
 
@@ -578,11 +650,19 @@ free_kernelpgtbl(pagetable_t pagetable)
   // there are 2^9 = 512 PTEs in a page table.
   for(int i = 0; i < 512; i++){
     pte_t pte = pagetable[i];
-    uint64 child = PTE2PA(pte);
-    if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0){ // 如果该页表项指向更低一级的页表
-      // 递归释放低一级页表及其页表项
-      free_kernelpgtbl((pagetable_t)child);
-      pagetable[i] = 0;
+
+    if (pte & PTE_V) {
+      if (pte & PTE_SHARED)
+        pagetable[i] = 0;
+      else {
+        if((pte & (PTE_R|PTE_W|PTE_X)) == 0){
+          // 如果该页表项指向更低一级的页表
+          // 递归释放低一级页表及其页表项
+          uint64 child = PTE2PA(pte);
+          free_kernelpgtbl((pagetable_t)child);
+          pagetable[i] = 0;
+        }
+      }
     }
   }
   kfree((void*)pagetable); // 释放当前级别页表所占用空间

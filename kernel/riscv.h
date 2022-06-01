@@ -356,6 +356,7 @@ sfence_vma()
 #define PTE_A (1L << 6)
 #define PTE_D (1L << 7)
 #define PTE_COW (1L << 8)
+#define PTE_SHARED (1L << 9)
 
 // shift a physical address to the right place for a PTE.
 #define PA2PTE(pa) ((((uint64)pa) >> 12) << 10)

@@ -52,7 +52,7 @@ exec(char *path, char **argv)
     if((sz1 = uvmalloc(pagetable, sz, ph.vaddr + ph.memsz)) == 0)
       goto bad;
     /* kernelpgtbl */
-    if(sz1 >= UART0)
+    if(sz1 >= BOTTOM_DEV_VA)
       goto bad;
     /* kernelpgtbl */
     sz = sz1;

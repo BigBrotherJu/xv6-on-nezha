@@ -153,7 +153,7 @@ found:
   }
 
   /* kernelpgtbl */
-  p->kernelpgtbl = kvmmake();
+  p->kernelpgtbl = kvmmake_proc();
 
   char *pa = kalloc();
   if(pa == 0)

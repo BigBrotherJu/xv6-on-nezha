@@ -15,6 +15,7 @@
 // d1 puts UART registers here in physical memory.
 #define UART0 0x02500000L
 #define UART0_IRQ 18
+#define UART0_VA 0x12000000L
 
 // virtio mmio interface
 // #define VIRTIO0 0x10001000
@@ -36,6 +37,8 @@
 #define PLIC_MCLAIM(hart) (PLIC + 0x200004 + (hart)*0x2000)
 #define PLIC_SCLAIM(hart) (PLIC + 0x201004 + (hart)*0x2000)
 #define PLIC_CTRL (PLIC + 0x1FFFFC)
+
+#define BOTTOM_DEV_VA PLIC
 
 // the kernel expects there to be RAM
 // for use by the kernel and user pages
