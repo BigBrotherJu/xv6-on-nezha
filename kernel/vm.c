@@ -261,6 +261,34 @@ mappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, int perm)
   return 0;
 }
 
+// mappages that can do remap
+int
+mappages_remap(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, int perm)
+{
+  uint64 a, last;
+  pte_t *pte;
+
+  if(size == 0)
+    panic("mappages: size");
+
+  a = PGROUNDDOWN(va);
+  last = PGROUNDDOWN(va + size - 1);
+  for(;;){
+    if((pte = walk(pagetable, a, 1)) == 0)
+      return -1;
+    /*
+    if(*pte & PTE_V)
+      panic("mappages: remap");
+    */
+    *pte = PA2PTE(pa) | perm | PTE_V | PTE_A | PTE_D;
+    if(a == last)
+      break;
+    a += PGSIZE;
+    pa += PGSIZE;
+  }
+  return 0;
+}
+
 // Remove npages of mappings starting from va. va must be
 // page-aligned. The mappings must exist.
 // Optionally free the physical memory.
@@ -540,11 +568,13 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
   uint64 n, va0, pa0;
 
   /* cow */
-  if (uvmcowcheck(pagetable, dstva, myproc()->sz)) {
+  struct proc *p = myproc();
+  if (uvmcowcheck(pagetable, dstva, p->sz)) {
     if (uvmcowalloc(pagetable, dstva) == -1) {
       panic("copyout: no memory when allocating new page for COW page");
       return -1;
     }
+    kvmcopymappings_single(p->pagetable, p->kernelpgtbl, dstva);
   }
   /* cow */
 
@@ -688,7 +718,7 @@ kvmcopymappings(pagetable_t src, pagetable_t dst, uint64 start, uint64 sz)
     // `& ~PTE_U` 表示将该页的权限设置为非用户页
     // 必须设置该权限，RISC-V 中内核是无法直接访问用户页的。
     flags = PTE_FLAGS(*pte) & ~PTE_U;
-    if(mappages(dst, i, PGSIZE, pa, flags) != 0){
+    if(mappages_remap(dst, i, PGSIZE, pa, flags) != 0){
       goto err;
     }
   }
@@ -698,6 +728,29 @@ kvmcopymappings(pagetable_t src, pagetable_t dst, uint64 start, uint64 sz)
  err:
   uvmunmap(dst, PGROUNDUP(start), (i - PGROUNDUP(start)) / PGSIZE, 0);
   return -1;
+}
+
+int
+kvmcopymappings_single(pagetable_t src, pagetable_t dst, uint64 va)
+{
+  pte_t *pte;
+  uint64 pa;
+  uint flags;
+
+  if((pte = walk(src, va, 0)) == 0)
+    panic("kvmcopymappings: pte should exist");
+  if((*pte & PTE_V) == 0)
+    panic("kvmcopymappings: page not present");
+  pa = PTE2PA(*pte);
+  // `& ~PTE_U` 表示将该页的权限设置为非用户页
+  // 必须设置该权限，RISC-V 中内核是无法直接访问用户页的。
+  flags = PTE_FLAGS(*pte) & ~PTE_U;
+
+  if(mappages_remap(dst, va, PGSIZE, pa, flags) != 0){
+    return -1;
+  }
+
+  return 0;
 }
 
 // 与 uvmdealloc 功能类似，将程序内存从 oldsz 缩减到 newsz。但区别在于不释放实际内存

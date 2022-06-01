@@ -195,6 +195,7 @@ void            vmprint(pagetable_t);
 pagetable_t     kvmmake_proc(void);
 void            free_kernelpgtbl(pagetable_t pagetable);
 int             kvmcopymappings(pagetable_t src, pagetable_t dst, uint64 start, uint64 sz);
+int             kvmcopymappings_single(pagetable_t src, pagetable_t dst, uint64 va);
 uint64          kvmdealloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz);
 pte_t*          walk_level(pagetable_t pagetable, uint64 va, int alloc, int level);
 /* kernelpgtbl */

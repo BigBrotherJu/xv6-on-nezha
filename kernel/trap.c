@@ -77,6 +77,7 @@ usertrap(void)
                "fault on COW page\n");
         p->killed = 1;
       }
+      kvmcopymappings_single(p->pagetable, p->kernelpgtbl, r_stval());
     } else {
     /* cow */
 
@@ -172,9 +173,21 @@ kerneltrap()
     panic("kerneltrap: interrupts enabled");
 
   if((which_dev = devintr()) == 0){
+    // store page fault on COW page
+    struct proc *p = myproc();
+    if (scause == 15 && uvmcowcheck(p->pagetable, r_stval(), p->sz) != 0) {
+      if (uvmcowalloc(p->pagetable, r_stval()) == -1) {
+        printf("no memory when allocating new page for store page"
+               "fault on COW page\n");
+        p->killed = 1;
+      }
+      kvmcopymappings_single(p->pagetable, p->kernelpgtbl, r_stval());
+    } else {
+
     printf("scause %p\n", scause);
     printf("sepc=%p stval=%p\n", r_sepc(), r_stval());
     panic("kerneltrap");
+    }
   }
 
   // give up the CPU if this is a timer interrupt.
