@@ -11,10 +11,12 @@ void printpgtbl_test();
 int
 main(int argc, char *argv[])
 {
+  printf("\n");
   ugetpid_test();
   // pgaccess_test();
+  printf("\n");
   printpgtbl_test();
-  printf("pgtbltest: all tests succeeded\n");
+  printf("\npgtbltest: all tests succeeded\n");
   exit(0);
 }
 
@@ -35,7 +37,7 @@ ugetpid_test()
   printf("ugetpid_test starting\n");
   testname = "ugetpid_test";
 
-  for (i = 0; i < 64; i++) {
+  for (i = 0; i < 32; i++) {
     int ret = fork();
     if (ret != 0) {
       wait(&ret);

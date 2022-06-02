@@ -213,6 +213,8 @@ filetest()
 int
 main(int argc, char *argv[])
 {
+  printf("\n");
+
   simpletest();
 
   printf("\n");
@@ -235,6 +237,8 @@ main(int argc, char *argv[])
   printf("\n");
 
   filetest();
+
+  printf("\n");
 
   printf("ALL COW TESTS PASSED\n");
 

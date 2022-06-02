@@ -100,7 +100,7 @@ run(void f(char *), char *s) {
   int pid;
   int xstatus;
 
-  printf("running test %s\n", s);
+  printf("\nrunning test %s\n", s);
   if((pid = fork()) < 0) {
     printf("runtest: fork error\n");
     exit(1);
@@ -136,7 +136,7 @@ main(int argc, char *argv[])
     { 0, 0},
   };
 
-  printf("lazytests starting\n");
+  printf("\nlazytests starting\n");
 
   int fail = 0;
   for (struct test *t = tests; t->s != 0; t++) {
@@ -146,7 +146,7 @@ main(int argc, char *argv[])
     }
   }
   if(!fail)
-    printf("ALL TESTS PASSED\n");
+    printf("\nALL TESTS PASSED\n");
   else
     printf("SOME TESTS FAILED\n");
   exit(1);   // not reached.

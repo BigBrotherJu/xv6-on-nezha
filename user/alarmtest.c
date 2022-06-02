@@ -21,8 +21,11 @@ void slow_handler();
 int
 main(int argc, char *argv[])
 {
+  printf("\n");
   test0();
+  printf("\n");
   test1();
+  printf("\n");
   test2();
   exit(0);
 }

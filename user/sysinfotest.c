@@ -153,10 +153,12 @@ void testproc() {
 int
 main(int argc, char *argv[])
 {
-  printf("sysinfotest: start\n");
+  printf("\nsysinfotest: start\n");
   testcall();
+  printf("\nmemory test:\n");
   testmem();
+  printf("\nprocess test:\n");
   testproc();
-  printf("sysinfotest: OK\n");
+  printf("\nsysinfotest: OK\n");
   exit(0);
 }
