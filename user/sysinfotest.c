@@ -41,25 +41,33 @@ countfree()
 void
 testmem() {
   struct sysinfo info;
-  uint64 n = countfree();
+  // uint64 n = countfree();
 
   sinfo(&info);
+  uint64 n = info.freemem;
 
+  /*
   if (info.freemem!= n) {
     printf("FAIL: free mem %d (bytes) instead of %d\n", info.freemem, n);
     exit(1);
   }
 
   printf("freemem from sysinfo equals freemem from sbrk\n");
+  */
 
   printf("free mem: %d bytes\n", info.freemem);
 
-  if((uint64)sbrk(PGSIZE) == 0xffffffffffffffff){
+  char *addr = sbrk(PGSIZE);
+
+  printf("allocated a free page using sbrk\n");
+
+  if((uint64)addr == 0xffffffffffffffff){
     printf("sbrk failed");
     exit(1);
+  } else {
+    *addr = '0';
+    printf("touched this free page\n");
   }
-
-  printf("allocated a free page\n");
 
   sinfo(&info);
 
