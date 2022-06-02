@@ -78,9 +78,14 @@ usertrap(void)
         p->killed = 1;
       }
       kvmcopymappings_single(p->pagetable, p->kernelpgtbl, r_stval());
-    } else {
     /* cow */
-
+    /* lazy */
+    } else if ((r_scause() == 13 || r_scause() == 15) &&
+                uvmlazycheck(r_stval())) {
+      uvmlazyalloc(r_stval());
+      kvmcopymappings_single(p->pagetable, p->kernelpgtbl, r_stval());
+    /* lazy */
+    } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
     p->killed = 1;
@@ -181,6 +186,10 @@ kerneltrap()
                "fault on COW page\n");
         p->killed = 1;
       }
+      kvmcopymappings_single(p->pagetable, p->kernelpgtbl, r_stval());
+    } else if ((r_scause() == 13 || r_scause() == 15) &&
+                uvmlazycheck(r_stval())) {
+      uvmlazyalloc(r_stval());
       kvmcopymappings_single(p->pagetable, p->kernelpgtbl, r_stval());
     } else {
 

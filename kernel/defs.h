@@ -183,6 +183,10 @@ void            uvmclear(pagetable_t, uint64);
 int             uvmcowcheck(pagetable_t, uint64, uint64);
 int             uvmcowalloc(pagetable_t, uint64);
 /* cow */
+/* lazy */
+int             uvmlazycheck(uint64);
+void            uvmlazyalloc(uint64);
+/* lazy */
 uint64          walkaddr(pagetable_t, uint64);
 int             copyout(pagetable_t, uint64, char *, uint64);
 int             copyin(pagetable_t, char *, uint64, uint64);

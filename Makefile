@@ -157,6 +157,9 @@ UPROGS +=\
 UPROGS +=\
 	$U/_cowtest\
 
+UPROGS +=\
+	$U/_lazytests\
+
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
 	xxd -i fs.img > kernel/ramdisk.h
